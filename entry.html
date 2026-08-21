@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>my.mech.data — entry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+Thai+Looped:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+
+<div class="term">
+  <div class="titlebar">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="path">~/my.mech.data — entry</span>
+    <a class="nav" href="index.html">← dashboard</a>
+    <span class="sync" id="sync-badge">local</span>
+  </div>
+  <div class="term-body">
+
+    <div class="cmd"><span class="prompt">&gt;</span> mech add <span class="flag">--currency THB</span></div>
+    <div id="meta-line">loading…</div>
+
+    <div id="example-banner" style="display:none" class="banner">
+      <span>The file still holds <b>example data</b> — clear it out and start logging the real thing</span>
+      <button class="btn sm danger" id="btn-clear-examples">Clear examples</button>
+    </div>
+
+    <section>
+      <div class="hr"></div>
+      <h2 id="form-title">Add an item<span class="hint">every price field is in THB</span></h2>
+      <div class="section-body">
+        <form class="form" id="entry-form" autocomplete="off">
+          <div class="field span2">
+            <label for="f-name">Name *</label>
+            <input id="f-name" name="name" placeholder="e.g. Keychron Q1 Pro" required>
+          </div>
+          <div class="field">
+            <label for="f-type">Type</label>
+            <select id="f-type" name="type">
+              <option value="keyboard">keyboard</option>
+              <option value="switches">switches</option>
+              <option value="keycaps">keycaps</option>
+              <option value="parts">parts — case / PCB / plate</option>
+              <option value="accessory">accessory</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-status">Status</label>
+            <select id="f-status" name="status">
+              <option value="owned">owned — have it now</option>
+              <option value="incoming">incoming — waiting on it</option>
+              <option value="sold">sold — passed it on for money</option>
+              <option value="gifted">gifted — gave it away</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-vendor">Vendor / source</label>
+            <input id="f-vendor" name="vendor" list="vendor-list" placeholder="e.g. Shopee, Divinikey, group buy">
+            <datalist id="vendor-list"></datalist>
+          </div>
+          <div class="field">
+            <label for="f-date">Purchase date</label>
+            <input id="f-date" name="purchased_at" type="date">
+          </div>
+          <div class="field">
+            <label for="f-item">Item price (฿)</label>
+            <input id="f-item" name="item" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0">
+          </div>
+          <div class="field">
+            <label for="f-tax">Tax (฿)</label>
+            <input id="f-tax" name="tax" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0">
+          </div>
+          <div class="field">
+            <label for="f-ship">Shipping (฿)</label>
+            <input id="f-ship" name="shipping" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0">
+          </div>
+          <div class="field span2">
+            <label for="f-notes">Notes</label>
+            <textarea id="f-notes" name="notes" rows="1" placeholder="optional"></textarea>
+          </div>
+
+          <div class="form-total">
+            <div>
+              <div class="lbl">Grand total</div>
+              <div class="amt" id="form-total">฿0</div>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn danger" id="btn-delete" style="display:none">Delete item</button>
+              <button type="button" class="btn" id="btn-reset">Clear form</button>
+              <button type="submit" class="btn primary" id="btn-save">Save</button>
+            </div>
+          </div>
+          <div class="field span2"><div class="err" id="form-err"></div></div>
+        </form>
+      </div>
+    </section>
+
+    <section>
+      <div class="hr"></div>
+      <h2>Pick an item to edit<span class="hint">click a row to load it into the form above</span></h2>
+      <div class="section-body">
+        <div class="form" style="margin-bottom:10px">
+          <div class="field span2">
+            <label for="f-search">Search</label>
+            <input id="f-search" placeholder="name or vendor">
+          </div>
+        </div>
+        <div class="scroll" style="max-height:340px"><table class="static" id="picker"></table></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="hr"></div>
+      <h2>github sync<span class="hint">aumiity/my.mech.data · data/keyboards.json</span></h2>
+      <div class="section-body">
+        <div id="sync-state" class="callout">checking…</div>
+        <div class="form" style="margin-top:12px">
+          <div class="field span2">
+            <label for="f-token">Fine-grained personal access token</label>
+            <input id="f-token" type="password" placeholder="github_pat_… (stays on this device only)">
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <div class="actions">
+              <button class="btn primary" id="btn-token-save">Connect</button>
+              <button class="btn" id="btn-pull">Pull</button>
+              <button class="btn danger" id="btn-token-clear">Remove token</button>
+            </div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:12px">
+          Create one under <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Settings → Developer settings → Fine-grained tokens</a>
+          → pick <b>aumiity/my.mech.data</b> as the only repository → permission <b>Contents: Read and write</b>.
+          The token is kept in this browser's <code>localStorage</code> and is never sent anywhere but api.github.com
+          — on a shared machine, hit <b>Remove token</b> when you are done.
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span id="foot-left"></span>
+      <span id="foot-right"></span>
+    </footer>
+
+  </div>
+</div>
+
+<script src="assets/seed.js"></script>
+<script src="assets/core.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const { TYPES, STATUS, REPO, esc, num, money, totalOf, totals } = MECH;
+  const $ = id => document.getElementById(id);
+
+  let editingId = null;
+  let query = '';
+
+  /* ——————————————————————————— status ——————————————————————————— */
+  MECH.onStatus(s => {
+    const b = $('sync-badge');
+    b.textContent = s.badge;
+    b.className = 'sync' + (s.cls ? ' ' + s.cls : '');
+    if (s.message != null) {
+      $('sync-state').innerHTML = s.message;
+      $('sync-state').style.borderLeftColor =
+        s.cls === 'ok' ? 'var(--green)' : s.cls === 'err' ? 'var(--red)' :
+        s.cls === 'warn' ? 'var(--yellow)' : 'var(--subtle)';
+    }
+  });
+
+  /* ——————————————————————————— render ——————————————————————————— */
+  function renderMeta() {
+    const src = { github: 'synced with github', file: 'read from the served file',
+                  cache: 'read from local cache', seed: 'no data yet', local: 'local' }[MECH.source] || MECH.source;
+    const upd = MECH.store.updated_at
+      ? new Date(MECH.store.updated_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
+      : '—';
+    $('meta-line').textContent =
+      MECH.store.items.length + ' items · THB · ' + src + ' · last updated ' + upd;
+  }
+
+  function renderPicker() {
+    const q = query.trim().toLowerCase();
+    const items = MECH.store.items.filter(it => !q ||
+      (it.name + ' ' + it.vendor).toLowerCase().indexOf(q) >= 0)
+      .slice().sort((a, b) => String(b.purchased_at).localeCompare(String(a.purchased_at)));
+
+    let h = '<thead><tr><th>Name</th><th>Type</th><th>Purchased</th>' +
+            '<th>Status</th><th class="num">Total</th></tr></thead>';
+    h += '<tbody>' + (items.length ? items.map(it =>
+      '<tr data-id="' + esc(it.id) + '"' + (editingId === it.id ? ' class="editing"' : '') + '>' +
+      '<td><span class="nm">' + esc(it.name) + '</span>' +
+        (it.vendor ? '<div class="sub">' + esc(it.vendor) + '</div>' : '') + '</td>' +
+      '<td>' + esc(TYPES[it.type] || it.type) + '</td>' +
+      '<td>' + esc(it.purchased_at || '—') + '</td>' +
+      '<td><span class="tag ' + esc(it.status) + '">' + esc(STATUS[it.status] || it.status) + '</span></td>' +
+      '<td class="num"><b>' + money(totalOf(it)) + '</b></td></tr>'
+    ).join('') : '<tr><td colspan="5"><div class="empty-state">' +
+      (q ? 'No item matches that search' : 'Nothing logged yet — fill in the form above') +
+      '</div></td></tr>') + '</tbody>';
+
+    $('picker').innerHTML = h;
+    $('picker').querySelectorAll('tbody tr[data-id]').forEach(tr =>
+      tr.onclick = () => editEntry(tr.dataset.id));
+  }
+
+  function renderVendors() {
+    const vs = [...new Set(MECH.store.items.map(i => i.vendor).filter(Boolean))].sort();
+    $('vendor-list').innerHTML = vs.map(v => '<option value="' + esc(v) + '">').join('');
+  }
+
+  function renderBanner() {
+    $('example-banner').style.display = MECH.store.items.some(i => i.example) ? '' : 'none';
+  }
+
+  function renderFooter() {
+    const t = totals(MECH.store.items);
+    $('foot-left').textContent = REPO.owner + '/' + REPO.repo + ' · ' + REPO.path;
+    $('foot-right').textContent =
+      MECH.store.items.length + ' items · ' + money(t.total) + ' · theme: session-report';
+  }
+
+  function renderAll() {
+    renderMeta(); renderPicker(); renderVendors(); renderBanner(); renderFooter();
+  }
+  MECH.onRender(() => { renderAll(); openFromHash(); });
+
+  /* ——————————————————————————— form ——————————————————————————— */
+  function formTotal() {
+    const t = num($('f-item').value) + num($('f-tax').value) + num($('f-ship').value);
+    $('form-total').textContent = money(t);
+  }
+
+  function resetForm() {
+    editingId = null;
+    $('entry-form').reset();
+    $('f-type').value = 'keyboard';
+    $('f-status').value = 'owned';
+    $('form-title').innerHTML = 'Add an item<span class="hint">every price field is in THB</span>';
+    $('btn-save').textContent = 'Save';
+    $('btn-delete').style.display = 'none';
+    $('form-err').textContent = '';
+    $('f-name').classList.remove('bad');
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    formTotal(); renderPicker();
+  }
+
+  function editEntry(id) {
+    const it = MECH.store.items.find(i => i.id === id);
+    if (!it) return;
+    editingId = id;
+    $('f-name').value = it.name;
+    $('f-type').value = it.type;
+    $('f-status').value = it.status;
+    $('f-vendor').value = it.vendor;
+    $('f-date').value = it.purchased_at;
+    $('f-item').value = it.cost.item || '';
+    $('f-tax').value = it.cost.tax || '';
+    $('f-ship').value = it.cost.shipping || '';
+    $('f-notes').value = it.notes;
+    $('form-title').innerHTML = 'Editing: ' + esc(it.name) + '<span class="hint">hit Clear form to go back to adding</span>';
+    $('btn-save').textContent = 'Save changes';
+    $('btn-delete').style.display = '';
+    $('form-err').textContent = '';
+    formTotal(); renderPicker();
+    $('entry-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('f-name').focus();
+  }
+
+  // the dashboard links a row over as entry.html#<id> — open it once data is in
+  function openFromHash() {
+    const id = decodeURIComponent((location.hash || '').slice(1));
+    if (!id || editingId) return;
+    if (MECH.store.items.some(i => i.id === id)) editEntry(id);
+  }
+
+  async function saveEntry(ev) {
+    ev.preventDefault();
+    const name = $('f-name').value.trim();
+    if (!name) {
+      $('f-name').classList.add('bad');
+      $('form-err').textContent = 'A name is required';
+      $('f-name').focus();
+      return;
+    }
+    $('f-name').classList.remove('bad');
+    $('form-err').textContent = '';
+
+    const payload = {
+      name: name,
+      type: $('f-type').value,
+      vendor: $('f-vendor').value.trim(),
+      purchased_at: $('f-date').value,
+      status: $('f-status').value,
+      cost: { item: num($('f-item').value), tax: num($('f-tax').value), shipping: num($('f-ship').value) },
+      notes: $('f-notes').value.trim()
+    };
+
+    let msg;
+    if (editingId) {
+      const i = MECH.store.items.findIndex(x => x.id === editingId);
+      if (i < 0) { resetForm(); return; }
+      MECH.store.items[i] = Object.assign({}, MECH.store.items[i], payload, { example: false });
+      msg = 'data: update ' + name;
+    } else {
+      MECH.store.items.push(Object.assign({ id: MECH.newId() }, payload, { example: false }));
+      msg = 'data: add ' + name;
+    }
+
+    $('btn-save').disabled = true;
+    resetForm();
+    renderAll();
+    await MECH.persist(msg);
+    $('btn-save').disabled = false;
+  }
+
+  async function deleteEntry() {
+    if (!editingId) return;
+    const it = MECH.store.items.find(i => i.id === editingId);
+    if (!it) { resetForm(); return; }
+    if ($('btn-delete').dataset.armed !== '1') {
+      $('btn-delete').dataset.armed = '1';
+      $('btn-delete').textContent = 'Click again to confirm';
+      $('form-err').textContent = 'This permanently removes "' + it.name + '"';
+      setTimeout(() => {
+        $('btn-delete').dataset.armed = '0';
+        $('btn-delete').textContent = 'Delete item';
+        $('form-err').textContent = '';
+      }, 4000);
+      return;
+    }
+    MECH.store.items = MECH.store.items.filter(i => i.id !== editingId);
+    $('btn-delete').dataset.armed = '0';
+    resetForm(); renderAll();
+    await MECH.persist('data: remove ' + it.name);
+  }
+
+  async function clearExamples() {
+    MECH.store.items = MECH.store.items.filter(i => !i.example);
+    if (editingId && !MECH.store.items.some(i => i.id === editingId)) resetForm();
+    renderAll();
+    await MECH.persist('data: clear example rows');
+  }
+
+  /* ——————————————————————————— token panel ——————————————————————————— */
+  function saveToken() {
+    const v = $('f-token').value.trim();
+    if (!v) { MECH.status('local only', 'warn', 'Paste a token first'); return; }
+    MECH.setToken(v);
+    $('f-token').value = '';
+    MECH.status('syncing…', 'warn', 'Checking the token…');
+    MECH.refresh();
+  }
+
+  /* ——————————————————————————— wiring ——————————————————————————— */
+  ['f-item', 'f-tax', 'f-ship'].forEach(id => $(id).addEventListener('input', formTotal));
+  $('entry-form').addEventListener('submit', saveEntry);
+  $('btn-reset').addEventListener('click', resetForm);
+  $('btn-delete').addEventListener('click', deleteEntry);
+  $('btn-clear-examples').addEventListener('click', clearExamples);
+  $('btn-token-save').addEventListener('click', saveToken);
+  $('btn-token-clear').addEventListener('click', () => MECH.clearToken());
+  $('btn-pull').addEventListener('click', () => MECH.refresh());
+  $('f-token').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveToken(); } });
+  $('f-search').addEventListener('input', e => { query = e.target.value; renderPicker(); });
+  window.addEventListener('hashchange', openFromHash);
+
+  formTotal();
+  MECH.load();
+})();
+</script>
+</body>
+</html>

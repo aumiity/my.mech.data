@@ -1,4 +1,5 @@
-{
+/* fallback copy of data/keyboards.json — regenerate with the snippet in CLAUDE.md */
+window.MECH_SEED = {
   "currency": "THB",
   "updated_at": "2026-08-21T03:40:00.000Z",
   "items": [
@@ -36,4 +37,4 @@
       "example": true
     }
   ]
-}
+};
