@@ -1,0 +1,39 @@
+{
+  "currency": "THB",
+  "updated_at": "2026-08-21T03:40:00.000Z",
+  "items": [
+    {
+      "id": "kb-example-1",
+      "name": "Keychron Q1 Pro (ตัวอย่าง)",
+      "type": "keyboard",
+      "vendor": "Shopee",
+      "purchased_at": "2026-03-14",
+      "status": "owned",
+      "cost": { "item": 8900, "tax": 623, "shipping": 120 },
+      "notes": "แถวตัวอย่าง — กดปุ่ม ล้างตัวอย่าง เพื่อลบทิ้ง",
+      "example": true
+    },
+    {
+      "id": "kb-example-2",
+      "name": "Gateron Oil King 90 ตัว (ตัวอย่าง)",
+      "type": "switches",
+      "vendor": "GB — Divinikey",
+      "purchased_at": "2026-04-02",
+      "status": "owned",
+      "cost": { "item": 1750, "tax": 122, "shipping": 450 },
+      "notes": "",
+      "example": true
+    },
+    {
+      "id": "kb-example-3",
+      "name": "GMK Olivia++ (ตัวอย่าง)",
+      "type": "keycaps",
+      "vendor": "Group buy",
+      "purchased_at": "2026-06-20",
+      "status": "incoming",
+      "cost": { "item": 6200, "tax": 434, "shipping": 890 },
+      "notes": "รอของ ETA Q4",
+      "example": true
+    }
+  ]
+}

@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>my.mech.data — keyboards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+Thai+Looped:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* anthropic / claude-code palette — matched to session-report */
+    --ivory: #FAF9F5;          /* session-report page bg — kept for palette lineage */
+    --page-bg: #0e0d0c;        /* this dashboard sits on dark instead */
+    --term-bg: #1a1918;
+    --term-fg: #d1cfc5;
+    --titlebar: #252321;
+    --outline: rgba(255,255,255,0.08);
+    --hover: rgba(255,255,255,0.035);
+    --clay: #D97757;
+    --dim: rgb(158,154,146);
+    --subtle: rgb(134,130,122);
+    --green: rgb(78,186,101);
+    --red: rgb(255,107,128);
+    --blue: rgb(177,185,249);
+    --yellow: rgb(255,193,7);
+    --mono: 'JetBrains Mono', 'Noto Sans Thai Looped', 'SF Mono', ui-monospace, Menlo, Monaco, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--page-bg); }
+  body {
+    margin: 0; padding: 48px 24px 80px;
+    font: 15px/1.6 var(--mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--term-fg);
+  }
+
+  /* ——— terminal window chrome ——— */
+  .term {
+    max-width: 1180px; margin: 0 auto;
+    background: var(--term-bg);
+    border-radius: 8px;
+    outline: 1px solid var(--outline);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+  }
+  .titlebar {
+    background: var(--titlebar);
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid var(--outline);
+    padding: 11px 14px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .titlebar .dot { width: 11px; height: 11px; border-radius: 50%; background: #3a3836; }
+  .titlebar .path { margin-left: 14px; color: var(--dim); font-size: 12px; }
+  .titlebar .sync { margin-left: auto; font-size: 11px; color: var(--subtle); }
+  .titlebar .sync.ok   { color: var(--green); }
+  .titlebar .sync.warn { color: var(--yellow); }
+  .titlebar .sync.err  { color: var(--red); }
+  .term-body { padding: 22px 30px 30px; }
+
+  /* ——— command + hero ——— */
+  .cmd { color: var(--dim); margin-bottom: 6px; }
+  .cmd .prompt { color: var(--clay); }
+  .cmd .flag { color: var(--blue); }
+  #meta-line { color: var(--subtle); font-size: 12px; }
+
+  #hero { margin: 14px 0 6px; }
+  #hero-total { font-size: 62px; font-weight: 700; line-height: 1; }
+  #hero-total .unit { color: var(--clay); }
+  #hero-total .label { font-size: 20px; font-weight: 400; color: var(--dim); margin-left: 8px; }
+  #hero-split { color: var(--dim); margin-top: 8px; }
+  #hero-split b { color: var(--term-fg); font-weight: 500; }
+  #hero-split .ok { color: var(--green); }
+  #hero-split .warn { color: var(--yellow); }
+
+  /* ——— sections ——— */
+  section { margin-top: 26px; }
+  .hr { color: var(--subtle); overflow: hidden; white-space: nowrap;
+        user-select: none; margin-bottom: 8px; }
+  .hr::after { content: '────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────'; }
+  h2 { all: unset; display: block; color: var(--clay); font-weight: 500; }
+  h2::before { content: '▸ '; }
+  h2 .hint { color: var(--subtle); font-size: 12px; font-weight: 400; margin-left: 10px; }
+  .section-body { margin-top: 10px; }
+
+  /* ——— stat grid ——— */
+  .grid { display: grid; gap: 4px 28px;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .stat { padding: 4px 0; }
+  .stat .label { font-size: 12px; color: var(--dim); }
+  .stat .val { font-size: 24px; font-weight: 500; }
+  .stat .detail { font-size: 12px; color: var(--subtle); }
+
+  /* ——— callouts / banners ——— */
+  .callout { padding: 6px 0 6px 14px; border-left: 2px solid var(--subtle);
+             color: var(--dim); margin: 6px 0; }
+  .callout b, .callout code { color: var(--term-fg); }
+  .banner { display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+            padding: 9px 14px; margin-bottom: 14px; border-radius: 4px;
+            border-left: 2px solid var(--yellow);
+            background: rgba(255,193,7,0.08); color: var(--dim); font-size: 13px; }
+  .banner b { color: var(--term-fg); }
+
+  /* ——— block-char bars ——— */
+  .bar { display: grid; grid-template-columns: 22ch 1fr 12ch 7ch; gap: 14px;
+         padding: 2px 0; align-items: center; }
+  .bar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar .blocks { color: var(--clay); white-space: pre; overflow: hidden; }
+  .bar .blocks .empty { color: var(--subtle); }
+  .bar .amt { text-align: right; color: var(--term-fg); }
+  .bar .pct { text-align: right; color: var(--dim); }
+  .bar:hover .name { color: var(--clay); }
+
+  /* ——— tables ——— */
+  .scroll { max-height: 520px; overflow: auto;
+            border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 10px; white-space: nowrap; }
+  td { border-top: 1px solid rgba(255,255,255,0.04); }
+  th { position: sticky; top: 0; background: var(--term-bg); z-index: 1;
+       font-weight: 500; font-size: 12px; color: var(--subtle);
+       cursor: pointer; user-select: none;
+       border-bottom: 1px solid var(--outline); }
+  th:hover { color: var(--dim); }
+  th.sorted { color: var(--clay); }
+  th.sorted::after { content: ' ↓'; }
+  th.sorted.asc::after { content: ' ↑'; }
+  td.num, th.num { text-align: right; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover td { background: var(--hover); }
+  tbody tr.editing td { background: rgba(217,119,87,0.10); }
+  td .nm { color: var(--term-fg); }
+  td .sub { color: var(--subtle); font-size: 12px; }
+  tfoot td { border-top: 1px solid var(--outline); color: var(--clay);
+             font-weight: 700; background: var(--term-bg); position: sticky; bottom: 0; }
+  .tag { font-size: 11px; padding: 2px 7px; border-radius: 3px;
+         border: 1px solid var(--subtle); color: var(--dim); }
+  .tag.owned    { border-color: rgba(78,186,101,.5);  color: var(--green); }
+  .tag.incoming { border-color: rgba(255,193,7,.5);   color: var(--yellow); }
+  .tag.sold     { border-color: rgba(136,136,136,.5); color: var(--dim); }
+  .tag.gifted   { border-color: rgba(177,185,249,.5); color: var(--blue); }
+
+  /* ——— form ——— */
+  .form { display: grid; gap: 12px 18px;
+          grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--dim); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 15px; color: var(--term-fg);
+    background: #211f1e; border: 1px solid var(--subtle);
+    border-radius: 4px; padding: 10px 12px; width: 100%;
+  }
+  .field textarea { resize: vertical; min-height: 44px; }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none; border-color: var(--clay); background: #262322;
+  }
+  .field input::placeholder { color: var(--subtle); }
+  .field.span2 { grid-column: span 2; }
+  .field .err { font-size: 12px; color: var(--red); min-height: 0; }
+  .field input.bad, .field select.bad { border-color: var(--red); }
+  .form-total { grid-column: 1 / -1; display: flex; justify-content: space-between;
+                align-items: baseline; flex-wrap: wrap; gap: 10px;
+                border-top: 1px solid var(--outline); padding-top: 12px; }
+  .form-total .lbl { font-size: 12px; color: var(--dim); }
+  .form-total .amt { font-size: 30px; font-weight: 700; color: var(--clay); }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  button.btn { font: 500 13px/1 var(--mono); letter-spacing: .04em;
+               padding: 10px 16px; border-radius: 4px; cursor: pointer;
+               background: none; border: 1px solid var(--subtle); color: var(--dim); }
+  button.btn:hover { border-color: var(--dim); color: var(--term-fg); background: var(--hover); }
+  button.btn.primary { border-color: var(--clay); color: var(--clay); }
+  button.btn.primary:hover { background: rgba(217,119,87,.12); color: var(--clay); }
+  button.btn.danger:hover { border-color: var(--red); color: var(--red);
+                            background: rgba(255,107,128,.10); }
+  button.btn:disabled { opacity: .4; cursor: not-allowed; }
+  button.btn.sm { padding: 7px 12px; font-size: 12px; }
+
+  .empty-state { color: var(--subtle); padding: 18px 0; }
+
+  footer { margin-top: 28px; color: var(--subtle); font-size: 12px;
+           display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  code { color: var(--blue); }
+  a { color: var(--clay); }
+  ::selection { background: var(--clay); color: var(--term-bg); }
+
+  @media (max-width: 760px) {
+    body { padding: 20px 12px 48px; }
+    .term-body { padding: 16px 16px 24px; }
+    #hero-total { font-size: 44px; }
+    .bar { grid-template-columns: 11ch 1fr 10ch; gap: 8px; }
+    .bar .pct { display: none; }
+    .form { grid-template-columns: 1fr; }
+    .field.span2 { grid-column: span 1; }
+    .titlebar .path { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="term">
+  <div class="titlebar">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="path">~/my.mech.data — keyboards</span>
+    <span class="sync" id="sync-badge">local</span>
+  </div>
+  <div class="term-body">
+
+    <div class="cmd"><span class="prompt">&gt;</span> mech ls <span class="flag">--currency THB --sort total</span></div>
+    <div id="meta-line">loading…</div>
+
+    <div id="hero">
+      <div id="hero-total">—</div>
+      <div id="hero-split"></div>
+    </div>
+
+    <div id="example-banner" style="display:none" class="banner">
+      <span>กำลังแสดง <b>ข้อมูลตัวอย่าง</b> — ลบทิ้งแล้วเริ่มกรอกของจริงได้เลย</span>
+      <button class="btn sm danger" id="btn-clear-examples">ล้างตัวอย่าง</button>
+    </div>
+
+    <section>
+      <div class="hr"></div>
+      <h2>สรุป<span class="hint">summary</span></h2>
+      <div class="section-body grid" id="summary-grid"></div>
+    </section>
+
+    <section>
+      <div class="hr"></div>
+      <h2>ยอดตามประเภท<span class="hint">share of total spend</span></h2>
+      <div class="section-body" id="bars-type"></div>
+    </section>
+
+    <section>
+      <div class="hr"></div>
+      <h2>ยอดตามร้าน<span class="hint">top vendors</span></h2>
+      <div class="section-body" id="bars-vendor"></div>
+    </section>
+
+    <section>
+      <div class="hr"></div>
+      <h2>ยอดตามเดือน<span class="hint">by purchase month</span></h2>
+      <div class="section-body" id="bars-month"></div>
+    </section>
+
+    <section>
+      <div class="hr"></div>
+      <h2>คอลเลกชัน<span class="hint">คลิกที่แถวเพื่อแก้ไข · คลิกหัวตารางเพื่อเรียง</span></h2>
+      <div class="section-body">
+        <div class="actions" style="margin-bottom:10px">
+          <button class="btn sm" id="f-all" data-f="all">ทั้งหมด</button>
+          <button class="btn sm" id="f-owned" data-f="owned">ครอบครอง</button>
+          <button class="btn sm" id="f-incoming" data-f="incoming">รอของ</button>
+          <button class="btn sm" id="f-sold" data-f="sold">ขายไปแล้ว</button>
+        </div>
+        <div class="scroll"><table id="tbl"></table></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="hr"></div>
+      <h2 id="form-title">เพิ่มรายการ<span class="hint">ทุกช่องราคาเป็นบาท</span></h2>
+      <div class="section-body">
+        <form class="form" id="entry-form" autocomplete="off">
+          <div class="field span2">
+            <label for="f-name">ชื่อ *</label>
+            <input id="f-name" name="name" placeholder="เช่น Keychron Q1 Pro" required>
+          </div>
+          <div class="field">
+            <label for="f-type">ประเภท</label>
+            <select id="f-type" name="type">
+              <option value="keyboard">keyboard — คีย์บอร์ด</option>
+              <option value="switches">switches — สวิตช์</option>
+              <option value="keycaps">keycaps — คีย์แคป</option>
+              <option value="parts">parts — เคส/PCB/เพลท</option>
+              <option value="accessory">accessory — อุปกรณ์เสริม</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-status">สถานะ</label>
+            <select id="f-status" name="status">
+              <option value="owned">owned — ครอบครองอยู่</option>
+              <option value="incoming">incoming — รอของ</option>
+              <option value="sold">sold — ขายไปแล้ว</option>
+              <option value="gifted">gifted — ยกให้คนอื่น</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-vendor">ร้าน / แหล่งซื้อ</label>
+            <input id="f-vendor" name="vendor" list="vendor-list" placeholder="เช่น Shopee, Divinikey, group buy">
+            <datalist id="vendor-list"></datalist>
+          </div>
+          <div class="field">
+            <label for="f-date">วันที่ซื้อ</label>
+            <input id="f-date" name="purchased_at" type="date">
+          </div>
+          <div class="field">
+            <label for="f-item">ค่าสินค้า (฿)</label>
+            <input id="f-item" name="item" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0">
+          </div>
+          <div class="field">
+            <label for="f-tax">ภาษี (฿)</label>
+            <input id="f-tax" name="tax" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0">
+          </div>
+          <div class="field">
+            <label for="f-ship">ค่าส่ง (฿)</label>
+            <input id="f-ship" name="shipping" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0">
+          </div>
+          <div class="field span2">
+            <label for="f-notes">โน้ต</label>
+            <textarea id="f-notes" name="notes" rows="1" placeholder="ไม่บังคับ"></textarea>
+          </div>
+
+          <div class="form-total">
+            <div>
+              <div class="lbl">รวมทั้งสิ้น</div>
+              <div class="amt" id="form-total">฿0</div>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn danger" id="btn-delete" style="display:none">ลบรายการ</button>
+              <button type="button" class="btn" id="btn-reset">ล้างฟอร์ม</button>
+              <button type="submit" class="btn primary" id="btn-save">บันทึก</button>
+            </div>
+          </div>
+          <div class="field span2"><div class="err" id="form-err"></div></div>
+        </form>
+      </div>
+    </section>
+
+    <section>
+      <div class="hr"></div>
+      <h2>github sync<span class="hint">aumiity/my.mech.data · data/keyboards.json</span></h2>
+      <div class="section-body">
+        <div id="sync-state" class="callout">กำลังตรวจสอบ…</div>
+        <div class="form" style="margin-top:12px">
+          <div class="field span2">
+            <label for="f-token">Fine-grained personal access token</label>
+            <input id="f-token" type="password" placeholder="github_pat_… (เก็บไว้ในเครื่องนี้เท่านั้น)">
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <div class="actions">
+              <button class="btn primary" id="btn-token-save">เชื่อมต่อ</button>
+              <button class="btn" id="btn-pull">ดึงข้อมูล</button>
+              <button class="btn danger" id="btn-token-clear">ลบ token</button>
+            </div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:12px">
+          สร้าง token ที่ <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Settings → Developer settings → Fine-grained tokens</a>
+          → เลือก repository <b>aumiity/my.mech.data</b> อย่างเดียว → permission <b>Contents: Read and write</b>.
+          token ถูกเก็บใน <code>localStorage</code> ของเบราว์เซอร์นี้เท่านั้น ไม่ถูกส่งไปไหนนอกจาก api.github.com
+          — ถ้าใช้เครื่องสาธารณะให้กด <b>ลบ token</b> เมื่อใช้เสร็จ
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span id="foot-left"></span>
+      <span id="foot-right"></span>
+    </footer>
+
+  </div>
+</div>
+
+<script id="seed-data" type="application/json">{
+  "currency": "THB",
+  "updated_at": "2026-08-21T03:40:00.000Z",
+  "items": [
+    {
+      "id": "kb-example-1",
+      "name": "Keychron Q1 Pro (ตัวอย่าง)",
+      "type": "keyboard",
+      "vendor": "Shopee",
+      "purchased_at": "2026-03-14",
+      "status": "owned",
+      "cost": { "item": 8900, "tax": 623, "shipping": 120 },
+      "notes": "แถวตัวอย่าง — กดปุ่ม ล้างตัวอย่าง เพื่อลบทิ้ง",
+      "example": true
+    },
+    {
+      "id": "kb-example-2",
+      "name": "Gateron Oil King 90 ตัว (ตัวอย่าง)",
+      "type": "switches",
+      "vendor": "GB — Divinikey",
+      "purchased_at": "2026-04-02",
+      "status": "owned",
+      "cost": { "item": 1750, "tax": 122, "shipping": 450 },
+      "notes": "",
+      "example": true
+    },
+    {
+      "id": "kb-example-3",
+      "name": "GMK Olivia++ (ตัวอย่าง)",
+      "type": "keycaps",
+      "vendor": "Group buy",
+      "purchased_at": "2026-06-20",
+      "status": "incoming",
+      "cost": { "item": 6200, "tax": 434, "shipping": 890 },
+      "notes": "รอของ ETA Q4",
+      "example": true
+    }
+  ]
+}</script>
+<script>
+(function () {
+  'use strict';
+
+  /* ——————————————————————————— config ——————————————————————————— */
+  const REPO = { owner: 'aumiity', repo: 'my.mech.data', branch: 'main', path: 'data/keyboards.json' };
+  const LS_TOKEN = 'mech.gh.token';
+  const LS_CACHE = 'mech.cache.v1';
+
+  const TYPES  = { keyboard:'คีย์บอร์ด', switches:'สวิตช์', keycaps:'คีย์แคป',
+                   parts:'ชิ้นส่วน', accessory:'อุปกรณ์เสริม' };
+  const STATUS = { owned:'ครอบครอง', incoming:'รอของ', sold:'ขายแล้ว', gifted:'ยกให้' };
+
+  /* ——————————————————————————— state ——————————————————————————— */
+  let STORE = { currency: 'THB', updated_at: null, items: [] };
+  let SHA = null;
+  let TOKEN = localStorage.getItem(LS_TOKEN) || '';
+  let source = 'local';
+  let editingId = null;
+  let sortKey = 'total', sortAsc = false;
+  let filter = 'all';
+
+  /* ——————————————————————————— helpers ——————————————————————————— */
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
+  const money = n => '฿' + num(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const totalOf = it => num(it.cost && it.cost.item) + num(it.cost && it.cost.tax)
+                      + num(it.cost && it.cost.shipping);
+  const newId = () => 'kb-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
+  const pct = (a, b) => b ? (100 * a / b).toFixed(1) + '%' : '0%';
+
+  function b64encode(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000)
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  function b64decode(b64) {
+    const bin = atob(String(b64).replace(/\s/g, ''));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+
+  function badge(text, cls) {
+    const b = $('sync-badge');
+    b.textContent = text;
+    b.className = 'sync' + (cls ? ' ' + cls : '');
+  }
+  function syncState(html, cls) {
+    $('sync-state').innerHTML = html;
+    $('sync-state').style.borderLeftColor =
+      cls === 'ok' ? 'var(--green)' : cls === 'err' ? 'var(--red)' :
+      cls === 'warn' ? 'var(--yellow)' : 'var(--subtle)';
+  }
+
+  /* ——————————————————————————— github i/o ——————————————————————————— */
+  async function gh(path, opts) {
+    opts = opts || {};
+    const headers = {
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    };
+    if (TOKEN) headers.Authorization = 'Bearer ' + TOKEN;
+    if (opts.body) headers['Content-Type'] = 'application/json';
+    const res = await fetch('https://api.github.com' + path,
+      Object.assign({}, opts, { headers: Object.assign(headers, opts.headers || {}) }));
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = res.status + ' ' + res.statusText;
+      try { const j = JSON.parse(text); if (j.message) msg = res.status + ' — ' + j.message; } catch (e) {}
+      const err = new Error(msg); err.status = res.status; throw err;
+    }
+    return text ? JSON.parse(text) : null;
+  }
+
+  const contentsPath = () =>
+    '/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + REPO.path;
+
+  async function pullFromGitHub() {
+    const j = await gh(contentsPath() + '?ref=' + encodeURIComponent(REPO.branch)
+                       + '&t=' + Date.now());
+    SHA = j.sha;
+    return JSON.parse(b64decode(j.content));
+  }
+
+  async function pushToGitHub(message) {
+    if (!TOKEN) throw new Error('ยังไม่ได้ใส่ token');
+    STORE.updated_at = new Date().toISOString();
+    const body = {
+      message: message,
+      content: b64encode(JSON.stringify(STORE, null, 2) + '\n'),
+      branch: REPO.branch
+    };
+    // data may have been loaded without the API (public raw fetch), so there is
+    // no sha yet — resolve it, otherwise GitHub rejects the update as a create
+    if (!SHA) {
+      try {
+        const cur = await gh(contentsPath() + '?ref=' + encodeURIComponent(REPO.branch));
+        SHA = cur.sha;
+      } catch (e) { if (e.status !== 404) throw e; }  // 404 = file not created yet
+    }
+    if (SHA) body.sha = SHA;
+    try {
+      const j = await gh(contentsPath(), { method: 'PUT', body: JSON.stringify(body) });
+      SHA = j.content.sha;
+    } catch (e) {
+      if (e.status !== 409 && e.status !== 422) throw e;
+      // someone else (or another device) wrote first — refresh sha and retry once
+      const fresh = await gh(contentsPath() + '?ref=' + encodeURIComponent(REPO.branch));
+      SHA = fresh.sha; body.sha = SHA;
+      const j = await gh(contentsPath(), { method: 'PUT', body: JSON.stringify(body) });
+      SHA = j.content.sha;
+    }
+  }
+
+  function normalize(raw) {
+    const items = (raw && Array.isArray(raw.items) ? raw.items : []).map(it => ({
+      id: it.id || newId(),
+      name: String(it.name || 'ไม่มีชื่อ'),
+      type: TYPES[it.type] ? it.type : 'keyboard',
+      vendor: String(it.vendor || ''),
+      purchased_at: String(it.purchased_at || ''),
+      status: STATUS[it.status] ? it.status : 'owned',
+      cost: {
+        item: num(it.cost && it.cost.item),
+        tax: num(it.cost && it.cost.tax),
+        shipping: num(it.cost && it.cost.shipping)
+      },
+      notes: String(it.notes || ''),
+      example: !!it.example
+    }));
+    return { currency: 'THB', updated_at: (raw && raw.updated_at) || null, items: items };
+  }
+
+  function cacheLocal() {
+    try { localStorage.setItem(LS_CACHE, JSON.stringify(STORE)); } catch (e) {}
+  }
+
+  async function persist(message) {
+    cacheLocal();
+    if (!TOKEN) {
+      badge('local only', 'warn');
+      syncState('บันทึกลงเครื่องนี้แล้ว แต่ <b>ยังไม่ได้ขึ้น GitHub</b> — ใส่ token ด้านล่างเพื่อ sync ข้ามเครื่อง', 'warn');
+      return;
+    }
+    badge('syncing…', 'warn');
+    try {
+      await pushToGitHub(message);
+      source = 'github';
+      badge('synced', 'ok');
+      syncState('เชื่อมต่อแล้ว — บันทึกขึ้น <code>' + REPO.owner + '/' + REPO.repo + '</code> เรียบร้อย เมื่อ '
+                + new Date().toLocaleString('th-TH'), 'ok');
+      renderMeta();
+    } catch (e) {
+      badge('sync failed', 'err');
+      syncState('<b>push ไม่สำเร็จ:</b> ' + esc(e.message)
+                + '<br>ข้อมูลยังอยู่ในเครื่องนี้ กด <b>ดึงข้อมูล</b> แล้วลองใหม่ได้', 'err');
+    }
+  }
+
+  async function load() {
+    // 1. github api — only path that yields the sha needed for writes
+    if (TOKEN) {
+      try {
+        STORE = normalize(await pullFromGitHub());
+        source = 'github';
+        badge('synced', 'ok');
+        syncState('เชื่อมต่อแล้ว — อ่านจาก <code>' + REPO.owner + '/' + REPO.repo
+                  + '/' + REPO.path + '</code>', 'ok');
+        cacheLocal(); renderAll(); return;
+      } catch (e) {
+        badge('sync failed', 'err');
+        syncState('<b>อ่านจาก GitHub ไม่ได้:</b> ' + esc(e.message)
+                  + '<br>token อาจหมดอายุหรือไม่มีสิทธิ์ <b>Contents</b> ของ repo นี้', 'err');
+      }
+    } else {
+      syncState('ยังไม่ได้เชื่อม GitHub — แก้ไขจะถูกเก็บใน localStorage ของเบราว์เซอร์นี้เท่านั้น', 'warn');
+      badge('local only', 'warn');
+    }
+    // 2. sibling file (works on a web server / GitHub Pages)
+    try {
+      const res = await fetch(REPO.path + '?t=' + Date.now(), { cache: 'no-store' });
+      if (res.ok) {
+        STORE = normalize(await res.json());
+        source = source === 'github' ? 'github' : 'file';
+        renderAll(); return;
+      }
+    } catch (e) {}
+    // 3. last write from this browser
+    try {
+      const c = localStorage.getItem(LS_CACHE);
+      if (c) { STORE = normalize(JSON.parse(c)); source = 'cache'; renderAll(); return; }
+    } catch (e) {}
+    // 4. embedded seed
+    try { STORE = normalize(JSON.parse($('seed-data').textContent)); } catch (e) {}
+    source = 'seed';
+    renderAll();
+  }
+
+  /* ——————————————————————————— derived data ——————————————————————————— */
+  function totals(items) {
+    return items.reduce((a, it) => {
+      a.item += num(it.cost.item); a.tax += num(it.cost.tax);
+      a.shipping += num(it.cost.shipping); a.total += totalOf(it);
+      return a;
+    }, { item: 0, tax: 0, shipping: 0, total: 0 });
+  }
+  function groupSum(items, keyFn) {
+    const m = new Map();
+    for (const it of items) {
+      const k = keyFn(it); if (!k) continue;
+      m.set(k, (m.get(k) || 0) + totalOf(it));
+    }
+    return [...m.entries()];
+  }
+  const visible = () => filter === 'all' ? STORE.items : STORE.items.filter(i => i.status === filter);
+
+  /* ——————————————————————————— render ——————————————————————————— */
+  function renderMeta() {
+    const src = { github: 'sync กับ github', file: 'อ่านจากไฟล์ในเว็บ',
+                  cache: 'อ่านจากแคชในเครื่อง', seed: 'ยังไม่มีข้อมูล', local: 'local' }[source] || source;
+    const upd = STORE.updated_at
+      ? new Date(STORE.updated_at).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })
+      : '—';
+    $('meta-line').textContent =
+      STORE.items.length + ' รายการ · สกุลเงิน THB · ' + src + ' · อัปเดตล่าสุด ' + upd;
+  }
+
+  function renderHero() {
+    const t = totals(STORE.items);
+    const s = money(t.total).match(/^฿([\d,]+)(\.\d+)?$/);
+    $('hero-total').innerHTML = '<span class="unit">฿</span>' +
+      (s ? esc(s[1] + (s[2] || '')) : esc(money(t.total).slice(1))) +
+      '<span class="label">รวมทั้งหมด</span>';
+    const overhead = t.tax + t.shipping;
+    const cls = t.total && overhead / t.total > 0.15 ? 'warn' : 'ok';
+    $('hero-split').innerHTML =
+      '<b>' + money(t.item) + '</b> ค่าสินค้า · ' +
+      '<b>' + money(t.tax) + '</b> ภาษี · ' +
+      '<b>' + money(t.shipping) + '</b> ค่าส่ง · ' +
+      '<span class="' + cls + '">ภาษี+ค่าส่งคิดเป็น ' + pct(overhead, t.total) + ' ของยอดรวม</span>';
+  }
+
+  function renderSummary() {
+    const items = STORE.items, t = totals(items);
+    const owned = items.filter(i => i.status === 'owned');
+    const incoming = items.filter(i => i.status === 'incoming');
+    const priciest = items.slice().sort((a, b) => totalOf(b) - totalOf(a))[0];
+    const kbs = items.filter(i => i.type === 'keyboard');
+    const rows = [
+      ['รายการทั้งหมด', items.length, owned.length + ' ครอบครองอยู่'],
+      ['คีย์บอร์ด', kbs.length, kbs.length ? 'เฉลี่ย ' + money(totals(kbs).total / kbs.length) + '/ตัว' : ''],
+      ['ยอดรวม', money(t.total), items.length ? 'เฉลี่ย ' + money(t.total / items.length) + '/ชิ้น' : ''],
+      ['ภาษี', money(t.tax), pct(t.tax, t.total) + ' ของยอดรวม'],
+      ['ค่าส่ง', money(t.shipping), pct(t.shipping, t.total) + ' ของยอดรวม'],
+      ['รอของอยู่', incoming.length, incoming.length ? money(totals(incoming).total) + ' ค้างท่อ' : 'ไม่มี'],
+      ['แพงที่สุด', priciest ? money(totalOf(priciest)) : '—', priciest ? priciest.name : '']
+    ];
+    $('summary-grid').innerHTML = rows.map(r =>
+      '<div class="stat"><div class="label">' + esc(r[0]) + '</div>' +
+      '<div class="val">' + esc(r[1]) + '</div>' +
+      (r[2] ? '<div class="detail" title="' + esc(r[2]) + '">' + esc(r[2]) + '</div>' : '') +
+      '</div>').join('');
+  }
+
+  function bars(host, rows, keepOrder) {
+    const W = window.innerWidth < 760 ? 16 : 40;
+    rows = keepOrder ? rows.slice() : rows.slice().sort((a, b) => b[1] - a[1]);
+    const sum = rows.reduce((a, r) => a + r[1], 0) || 1;
+    const max = Math.max.apply(null, rows.map(r => r[1]).concat([1]));
+    $(host).innerHTML = rows.length ? rows.map(r => {
+      const n = Math.max(r[1] > 0 ? 1 : 0, Math.round(W * r[1] / max));
+      return '<div class="bar"><span class="name" title="' + esc(r[0]) + '">' + esc(r[0]) + '</span>' +
+        '<span class="blocks">' + '█'.repeat(n) +
+        '<span class="empty">' + '░'.repeat(Math.max(0, W - n)) + '</span></span>' +
+        '<span class="amt">' + money(r[1]) + '</span>' +
+        '<span class="pct">' + pct(r[1], sum) + '</span></div>';
+    }).join('') : '<div class="empty-state">ยังไม่มีข้อมูล</div>';
+  }
+
+  function renderBars() {
+    bars('bars-type', groupSum(STORE.items, i => TYPES[i.type] || i.type));
+    bars('bars-vendor', groupSum(STORE.items, i => i.vendor || 'ไม่ระบุร้าน').slice(0, 12));
+    const byMonth = groupSum(STORE.items, i => (i.purchased_at || '').slice(0, 7))
+      .sort((a, b) => a[0].localeCompare(b[0])).slice(-12);
+    bars('bars-month', byMonth, true);
+  }
+
+  const COLS = [
+    { k: 'name',         t: 'ชื่อ' },
+    { k: 'type',         t: 'ประเภท' },
+    { k: 'vendor',       t: 'ร้าน' },
+    { k: 'purchased_at', t: 'วันที่ซื้อ' },
+    { k: 'status',       t: 'สถานะ' },
+    { k: 'item',         t: 'ค่าสินค้า', n: 1 },
+    { k: 'tax',          t: 'ภาษี',      n: 1 },
+    { k: 'shipping',     t: 'ค่าส่ง',    n: 1 },
+    { k: 'total',        t: 'รวม',       n: 1 }
+  ];
+  const cellVal = (it, k) =>
+    k === 'total' ? totalOf(it) :
+    (k === 'item' || k === 'tax' || k === 'shipping') ? num(it.cost[k]) : (it[k] || '');
+
+  function renderTable() {
+    const items = visible().slice().sort((a, b) => {
+      const x = cellVal(a, sortKey), y = cellVal(b, sortKey);
+      const c = typeof x === 'number' && typeof y === 'number'
+        ? x - y : String(x).localeCompare(String(y), 'th');
+      return sortAsc ? c : -c;
+    });
+    const t = totals(items);
+    let h = '<thead><tr>' + COLS.map(c =>
+      '<th data-k="' + c.k + '" class="' + (c.n ? 'num ' : '') +
+      (sortKey === c.k ? 'sorted' + (sortAsc ? ' asc' : '') : '') + '">' + esc(c.t) + '</th>'
+    ).join('') + '</tr></thead>';
+
+    h += '<tbody>' + (items.length ? items.map(it =>
+      '<tr data-id="' + esc(it.id) + '"' + (editingId === it.id ? ' class="editing"' : '') + '>' +
+      '<td><span class="nm">' + esc(it.name) + '</span>' +
+        (it.notes ? '<div class="sub" title="' + esc(it.notes) + '">' + esc(it.notes.slice(0, 40)) +
+          (it.notes.length > 40 ? '…' : '') + '</div>' : '') + '</td>' +
+      '<td>' + esc(TYPES[it.type] || it.type) + '</td>' +
+      '<td>' + esc(it.vendor || '—') + '</td>' +
+      '<td>' + esc(it.purchased_at || '—') + '</td>' +
+      '<td><span class="tag ' + esc(it.status) + '">' + esc(STATUS[it.status] || it.status) + '</span></td>' +
+      '<td class="num">' + money(it.cost.item) + '</td>' +
+      '<td class="num">' + money(it.cost.tax) + '</td>' +
+      '<td class="num">' + money(it.cost.shipping) + '</td>' +
+      '<td class="num"><b>' + money(totalOf(it)) + '</b></td></tr>'
+    ).join('') : '<tr><td colspan="9"><div class="empty-state">ยังไม่มีรายการ — กรอกในฟอร์มด้านล่างได้เลย</div></td></tr>') + '</tbody>';
+
+    if (items.length) h += '<tfoot><tr><td colspan="5">รวม ' + items.length + ' รายการ</td>' +
+      '<td class="num">' + money(t.item) + '</td><td class="num">' + money(t.tax) + '</td>' +
+      '<td class="num">' + money(t.shipping) + '</td><td class="num">' + money(t.total) + '</td></tr></tfoot>';
+
+    $('tbl').innerHTML = h;
+    $('tbl').querySelectorAll('th').forEach(th => th.onclick = () => {
+      const k = th.dataset.k;
+      if (sortKey === k) sortAsc = !sortAsc; else { sortKey = k; sortAsc = !(k === 'total' || COLS.find(c => c.k === k).n); }
+      renderTable();
+    });
+    $('tbl').querySelectorAll('tbody tr[data-id]').forEach(tr =>
+      tr.onclick = () => editEntry(tr.dataset.id));
+  }
+
+  function renderFilters() {
+    ['all', 'owned', 'incoming', 'sold'].forEach(f => {
+      const b = $('f-' + f);
+      b.className = 'btn sm' + (filter === f ? ' primary' : '');
+    });
+  }
+
+  function renderVendors() {
+    const vs = [...new Set(STORE.items.map(i => i.vendor).filter(Boolean))].sort();
+    $('vendor-list').innerHTML = vs.map(v => '<option value="' + esc(v) + '">').join('');
+  }
+
+  function renderBanner() {
+    $('example-banner').style.display = STORE.items.some(i => i.example) ? '' : 'none';
+  }
+
+  function renderFooter() {
+    const t = totals(STORE.items);
+    $('foot-left').textContent = REPO.owner + '/' + REPO.repo + ' · ' + REPO.path;
+    $('foot-right').textContent =
+      STORE.items.length + ' รายการ · ' + money(t.total) + ' · theme: session-report';
+  }
+
+  function renderAll() {
+    renderMeta(); renderHero(); renderSummary(); renderBars();
+    renderFilters(); renderTable(); renderVendors(); renderBanner(); renderFooter();
+  }
+
+  /* ——————————————————————————— form ——————————————————————————— */
+  function formTotal() {
+    const t = num($('f-item').value) + num($('f-tax').value) + num($('f-ship').value);
+    $('form-total').textContent = money(t);
+  }
+
+  function resetForm() {
+    editingId = null;
+    $('entry-form').reset();
+    $('f-type').value = 'keyboard';
+    $('f-status').value = 'owned';
+    $('form-title').innerHTML = 'เพิ่มรายการ<span class="hint">ทุกช่องราคาเป็นบาท</span>';
+    $('btn-save').textContent = 'บันทึก';
+    $('btn-delete').style.display = 'none';
+    $('form-err').textContent = '';
+    $('f-name').classList.remove('bad');
+    formTotal(); renderTable();
+  }
+
+  function editEntry(id) {
+    const it = STORE.items.find(i => i.id === id);
+    if (!it) return;
+    editingId = id;
+    $('f-name').value = it.name;
+    $('f-type').value = it.type;
+    $('f-status').value = it.status;
+    $('f-vendor').value = it.vendor;
+    $('f-date').value = it.purchased_at;
+    $('f-item').value = it.cost.item || '';
+    $('f-tax').value = it.cost.tax || '';
+    $('f-ship').value = it.cost.shipping || '';
+    $('f-notes').value = it.notes;
+    $('form-title').innerHTML = 'แก้ไข: ' + esc(it.name) + '<span class="hint">คลิก ล้างฟอร์ม เพื่อกลับไปเพิ่มรายการใหม่</span>';
+    $('btn-save').textContent = 'บันทึกการแก้ไข';
+    $('btn-delete').style.display = '';
+    $('form-err').textContent = '';
+    formTotal(); renderTable();
+    $('entry-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('f-name').focus();
+  }
+
+  async function saveEntry(ev) {
+    ev.preventDefault();
+    const name = $('f-name').value.trim();
+    if (!name) {
+      $('f-name').classList.add('bad');
+      $('form-err').textContent = 'ต้องใส่ชื่อรายการ';
+      $('f-name').focus();
+      return;
+    }
+    $('f-name').classList.remove('bad');
+    $('form-err').textContent = '';
+
+    const payload = {
+      name: name,
+      type: $('f-type').value,
+      vendor: $('f-vendor').value.trim(),
+      purchased_at: $('f-date').value,
+      status: $('f-status').value,
+      cost: { item: num($('f-item').value), tax: num($('f-tax').value), shipping: num($('f-ship').value) },
+      notes: $('f-notes').value.trim()
+    };
+
+    let msg;
+    if (editingId) {
+      const i = STORE.items.findIndex(x => x.id === editingId);
+      if (i < 0) { resetForm(); return; }
+      STORE.items[i] = Object.assign({}, STORE.items[i], payload, { example: false });
+      msg = 'data: update ' + name;
+    } else {
+      STORE.items.push(Object.assign({ id: newId() }, payload, { example: false }));
+      msg = 'data: add ' + name;
+    }
+
+    $('btn-save').disabled = true;
+    resetForm();
+    renderAll();
+    await persist(msg);
+    $('btn-save').disabled = false;
+  }
+
+  async function deleteEntry() {
+    if (!editingId) return;
+    const it = STORE.items.find(i => i.id === editingId);
+    if (!it) { resetForm(); return; }
+    if ($('btn-delete').dataset.armed !== '1') {
+      $('btn-delete').dataset.armed = '1';
+      $('btn-delete').textContent = 'กดอีกครั้งเพื่อลบจริง';
+      $('form-err').textContent = 'จะลบ "' + it.name + '" ออกถาวร';
+      setTimeout(() => {
+        $('btn-delete').dataset.armed = '0';
+        $('btn-delete').textContent = 'ลบรายการ';
+        $('form-err').textContent = '';
+      }, 4000);
+      return;
+    }
+    STORE.items = STORE.items.filter(i => i.id !== editingId);
+    $('btn-delete').dataset.armed = '0';
+    resetForm(); renderAll();
+    await persist('data: remove ' + it.name);
+  }
+
+  async function clearExamples() {
+    STORE.items = STORE.items.filter(i => !i.example);
+    if (editingId && !STORE.items.some(i => i.id === editingId)) resetForm();
+    renderAll();
+    await persist('data: clear example rows');
+  }
+
+  /* ——————————————————————————— token panel ——————————————————————————— */
+  function saveToken() {
+    const v = $('f-token').value.trim();
+    if (!v) { syncState('ใส่ token ก่อนครับ', 'warn'); return; }
+    TOKEN = v;
+    localStorage.setItem(LS_TOKEN, v);
+    $('f-token').value = '';
+    syncState('กำลังตรวจสอบ token…');
+    load();
+  }
+  function clearToken() {
+    TOKEN = ''; SHA = null;
+    localStorage.removeItem(LS_TOKEN);
+    badge('local only', 'warn');
+    syncState('ลบ token แล้ว — หน้านี้ยังอ่านข้อมูลได้ แต่แก้ไขจะไม่ขึ้น GitHub', 'warn');
+  }
+
+  /* ——————————————————————————— wiring ——————————————————————————— */
+  ['f-item', 'f-tax', 'f-ship'].forEach(id => $(id).addEventListener('input', formTotal));
+  $('entry-form').addEventListener('submit', saveEntry);
+  $('btn-reset').addEventListener('click', resetForm);
+  $('btn-delete').addEventListener('click', deleteEntry);
+  $('btn-clear-examples').addEventListener('click', clearExamples);
+  $('btn-token-save').addEventListener('click', saveToken);
+  $('btn-token-clear').addEventListener('click', clearToken);
+  $('btn-pull').addEventListener('click', () => { SHA = null; load(); });
+  $('f-token').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveToken(); } });
+  ['all', 'owned', 'incoming', 'sold'].forEach(f =>
+    $('f-' + f).addEventListener('click', () => { filter = f; renderFilters(); renderTable(); }));
+
+  let rt;
+  window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderBars, 150); });
+
+  formTotal();
+  load();
+})();
+</script>
+</body>
+</html>
